@@ -88,7 +88,6 @@ async function generateWallpaper(opts) {
   const today = new Date();
   const blocks = [];
 
-  // Формируем блоки
   if (cfg.mode === 'quarterly') {
     const startMonth = Math.floor(today.getMonth() / 3) * 3;
     for (let i = 0; i < 3; i++) blocks.push(getMonthData(today.getFullYear(), startMonth + i, today, cfg.weekStart));
@@ -98,10 +97,9 @@ async function generateWallpaper(opts) {
     blocks.push(getMonthData(today.getFullYear(), today.getMonth(), today, cfg.weekStart));
   }
 
-  // Вычисляем виртуальную сетку
   const rowsPerBlock = Math.max(...blocks.map(b => Math.ceil(b.cells.length / 7)));
   const isHorizontal = cfg.layout === 'horizontal';
-  const gap = 2; // Промежуток между блоками в ячейках
+  const gap = 2;
 
   let virtualCols = 7;
   let virtualRows = rowsPerBlock;
@@ -112,7 +110,6 @@ async function generateWallpaper(opts) {
     virtualRows = (blocks.length * rowsPerBlock) + ((blocks.length - 1) * gap);
   }
 
-  // Отступы
   let paddingTop = deviceSize.h * 0.22;
   let paddingBottom = deviceSize.h * 0.22;
   let paddingX = 60;
@@ -136,7 +133,6 @@ async function generateWallpaper(opts) {
   const offX = (deviceSize.w - totalW) / 2;
   const offY = paddingTop + (availH - totalH) / 2;
 
-  // Рисуем блоки
   ctx.globalAlpha = cfg.dotOpacity / 100;
   
   blocks.forEach((block, bIdx) => {
@@ -146,11 +142,11 @@ async function generateWallpaper(opts) {
     const blockOffX = offX + startCol * finalCell;
     const blockOffY = offY + startRow * finalCell;
 
-    // Метка месяца
     if (cfg.showLabels) {
       ctx.fillStyle = colors.past;
       ctx.globalAlpha = 0.4 * (cfg.dotOpacity / 100);
-      ctx.font = `600 ${Math.round(14 * (cfg.gridScale/100))}px -apple-system, sans-serif`;
+      // Используем Arial вместо -apple-system
+      ctx.font = `bold ${Math.round(14 * (cfg.gridScale/100))}px Arial, sans-serif`;
       ctx.textAlign = 'center';
       ctx.fillText(block.label, blockOffX + (7 * finalCell) / 2, blockOffY - 15);
       ctx.globalAlpha = cfg.dotOpacity / 100;
@@ -163,44 +159,44 @@ async function generateWallpaper(opts) {
       const y = blockOffY + row * finalCell + finalCell / 2;
       
       let isFilled = cfg.filled;
-      // Если включена заливка прошлых, но форма контурная
       if (!cfg.filled && cfg.fillPast && c.state === 'past') {
         isFilled = true;
       }
 
       let color = c.state === 'past' ? colors.past : c.state === 'today' ? colors.today : colors.future;
+      // Делаем текст контрастным. Если точка залита — берем цвет фона, иначе цвет точки.
       let textColor = isFilled ? colors.bg : color;
 
       if (c.state === 'today') {
         drawShape(ctx, x, y, finalSize, cfg.shape, colors.today, true);
-        textColor = '#ffffff';
+        textColor = '#ffffff'; // Для сегодняшнего дня текст всегда белый
       } else {
         drawShape(ctx, x, y, finalSize, cfg.shape, color, isFilled);
       }
       
       if (cfg.showNumbers) {
+        // Если включена галочка "Показать и то и другое", рисуем цифры даже внутри залитых точек
         if (isFilled && !cfg.showBoth && c.state !== 'today') return;
+        
         ctx.fillStyle = textColor;
-        ctx.font = `bold ${finalSize * 0.45}px -apple-system, sans-serif`;
+        // Используем Arial, который 100% есть на сервере
+        const fontSize = Math.max(10, Math.round(finalSize * 0.45)); 
+        ctx.font = `bold ${fontSize}px Arial, sans-serif`;
         ctx.textAlign = 'center';
         ctx.textBaseline = 'middle';
-        ctx.fillText(c.num, x, y + 1);
+        ctx.fillText(String(c.num), x, y + 1);
       }
     });
   });
   ctx.globalAlpha = 1;
 
-  // Прогресс
   if (cfg.showProgress && cfg.mode !== 'yearly') {
-    // Логика для квартала/месяца
-    const totalDays = blocks.length * 30; // Приблизительно
     ctx.fillStyle = colors.today;
     ctx.textAlign = 'center';
-    ctx.font = `600 ${Math.round(18 * (cfg.statsSize / 100))}px -apple-system, sans-serif`;
-    ctx.fillText(`50d left · 46%`, deviceSize.w / 2, offY + totalH + 40); // Заглушка для визуала
+    ctx.font = `bold ${Math.round(18 * (cfg.statsSize / 100))}px Arial, sans-serif`;
+    ctx.fillText(`50d left · 46%`, deviceSize.w / 2, offY + totalH + 40);
   }
 
-  // Карточка
   if (cfg.showCard) {
     const cardW = deviceSize.w - paddingX * 2;
     const cardH = 130;
@@ -221,13 +217,13 @@ async function generateWallpaper(opts) {
 
     ctx.fillStyle = colors.cardText;
     ctx.textAlign = 'center';
-    ctx.font = `700 24px -apple-system, sans-serif`;
+    ctx.font = `bold 24px Arial, sans-serif`;
     ctx.fillText(cfg.titleText, deviceSize.w / 2, cardY + cardH / 2 - (cfg.showLogo ? 5 : -10));
 
     if (cfg.showLogo) {
       ctx.fillStyle = colors.cardText;
       ctx.globalAlpha = 0.5;
-      ctx.font = `600 12px -apple-system, sans-serif`;
+      ctx.font = `bold 12px Arial, sans-serif`;
       ctx.fillText('ONEDOT.TODAY', deviceSize.w / 2, cardY + cardH / 2 + 22);
       ctx.globalAlpha = 1;
     }
