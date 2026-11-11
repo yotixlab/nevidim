@@ -1,0 +1,13 @@
+{
+  "name": "onedot-clone",
+  "version": "1.0.0",
+  "description": "Exact OneDot Clone",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js"
+  },
+  "dependencies": {
+    "@napi-rs/canvas": "^0.1.44",
+    "express": "^4.19.2"
+  }
+}

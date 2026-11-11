@@ -1,0 +1,416 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>One Dot Studio</title>
+<link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Noto+Sans:wght@300;400;500;600;700&family=Old+Standard+TT:ital@0;1&display=swap" rel="stylesheet">
+<script src="https://cdn.tailwindcss.com"></script>
+<style>
+  body { font-family: 'Noto Sans', sans-serif; font-weight: 300; background: #fafafa; }
+  .font-serif { font-family: 'Instrument Serif', 'Old Standard TT', serif; }
+  .custom-scrollbar::-webkit-scrollbar { width: 6px; }
+  .custom-scrollbar::-webkit-scrollbar-thumb { background-color: rgba(156, 163, 175, 0.5); border-radius: 20px; }
+  
+  .phone-mockup { 
+    width: 320px; height: 693px; 
+    background: #adadaf; 
+    border-radius: 52px; 
+    padding: 12px; 
+    box-shadow: 0 30px 60px rgba(0,0,0,0.15); 
+    position: relative; 
+  }
+  .phone-screen { 
+    width: 100%; height: 100%; 
+    background: #fff; 
+    border-radius: 40px; 
+    overflow: hidden; 
+    position: relative; 
+  }
+  .dynamic-island { 
+    position: absolute; top: 14px; left: 50%; transform: translateX(-50%); 
+    width: 100px; height: 28px; background: #000; border-radius: 20px; z-index: 20; 
+  }
+  .phone-time { 
+    position: absolute; top: 65px; left: 50%; transform: translateX(-50%); 
+    font-size: 90px; font-weight: 300; color: rgba(0,0,0,0.04); z-index: 10; letter-spacing: -4px; 
+  }
+
+  .pill-btn { padding: 8px 16px; border-radius: 12px; font-family: 'Instrument Serif', serif; font-size: 16px; background: rgba(42,42,42,0.05); color: rgba(42,42,42,0.6); border: 1px solid transparent; transition: all 0.2s; white-space: nowrap; }
+  .pill-btn.active { background: #fafafa; color: #2a2a2a; border-color: #c9c9c9; box-shadow: 0 2px 8px rgba(0,0,0,0.05); }
+  .layout-btn { padding: 16px; border-radius: 16px; background: rgba(42,42,42,0.05); color: rgba(42,42,42,0.6); border: 1px solid transparent; transition: all 0.2s; font-family: 'Instrument Serif', serif; font-size: 16px; display: flex; flex-direction: column; align-items: center; }
+  .layout-btn.active { background: #fafafa; color: #2a2a2a; border-color: #c9c9c9; box-shadow: 0 4px 12px rgba(0,0,0,0.05); }
+  .shape-btn { padding: 12px 8px; border-radius: 16px; background: rgba(42,42,42,0.05); border: 1px solid transparent; transition: all 0.2s; display: flex; flex-direction: column; align-items: center; gap: 8px; color: rgba(42,42,42,0.6); font-size: 13px; font-family: 'Instrument Serif', serif; }
+  .shape-btn.active { background: #fafafa; color: #2a2a2a; border-color: #c9c9c9; box-shadow: 0 4px 12px rgba(0,0,0,0.05); }
+  .theme-btn { padding: 6px 12px; border-radius: 8px; font-size: 13px; text-transform: capitalize; border: 1px solid transparent; transition: all 0.2s; }
+  .theme-btn.active { box-shadow: 0 0 0 2px #fafafa, 0 0 0 3px #2a2a2a; }
+
+  .toggle-switch { position: relative; display: inline-block; width: 44px; height: 24px; }
+  .toggle-switch input { opacity: 0; width: 0; height: 0; }
+  .slider { position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0; background-color: #e5e5e5; transition: .3s; border-radius: 24px; }
+  .slider:before { position: absolute; content: ""; height: 20px; width: 20px; left: 2px; bottom: 2px; background-color: white; transition: .3s; border-radius: 50%; box-shadow: 0 2px 4px rgba(0,0,0,0.2); }
+  input:checked + .slider { background-color: #2a2a2a; }
+  input:checked + .slider:before { transform: translateX(20px); }
+
+  input[type=range] { -webkit-appearance: none; background: transparent; }
+  input[type=range]::-webkit-slider-thumb { -webkit-appearance: none; height: 16px; width: 16px; border-radius: 50%; background: #2a2a2a; cursor: pointer; margin-top: -6px; }
+  input[type=range]::-webkit-slider-runnable-track { width: 100%; height: 4px; background: #e5e5e5; border-radius: 2px; }
+</style>
+</head>
+<body class="flex h-screen overflow-hidden text-gray-900">
+
+  <div class="w-1/2 flex items-center justify-center relative bg-[#fbfbfb]">
+    <div class="phone-mockup">
+      <div class="phone-screen">
+        <div class="dynamic-island"></div>
+        <div class="phone-time">09:41</div>
+        <img id="preview" class="w-full h-full object-cover">
+      </div>
+    </div>
+  </div>
+
+  <div class="w-1/2 flex flex-col border-l border-gray-200 bg-white">
+    <div class="flex-1 overflow-y-auto px-10 py-10 custom-scrollbar">
+      
+      <div class="flex items-center justify-between mb-8">
+        <h1 class="font-serif text-3xl text-gray-900">Конфигурация</h1>
+        <button onclick="randomize()" class="p-2 rounded-xl text-gray-400 hover:text-gray-900 hover:bg-gray-100 transition-all">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect width="12" height="12" x="2" y="10" rx="2" ry="2"></rect><path d="m17.92 14 3.5-3.5a2.24 2.24 0 0 0 0-3l-5-4.92a2.24 2.24 0 0 0-3 0L10 6"></path><path d="M6 18h.01"></path><path d="M10 14h.01"></path><path d="M15 6h.01"></path><path d="M18 9h.01"></path></svg>
+        </button>
+      </div>
+
+      <section class="mb-8">
+        <h2 class="font-serif text-lg text-gray-500 mb-3">Устройство</h2>
+        <div class="flex items-end justify-between border-b border-black/10 pb-2">
+          <select id="device" class="font-serif text-xl text-gray-900 bg-transparent focus:outline-none appearance-none cursor-pointer">
+            <option value="iphone-13">iPhone 13</option>
+            <option value="iphone-14-pro">iPhone 14 Pro / 15 Pro</option>
+          </select>
+          <button class="text-xs text-gray-400 uppercase tracking-wider pb-1 cursor-default">Изменить</button>
+        </div>
+      </section>
+
+      <section class="mb-8">
+        <h2 class="font-serif text-lg text-gray-500 mb-3">Режим просмотра</h2>
+        <div class="flex gap-2">
+          <button class="pill-btn flex-1" data-mode="monthly">Ежемесячно</button>
+          <button class="pill-btn flex-1 active" data-mode="quarterly">Ежеквартально</button>
+          <button class="pill-btn flex-1" data-mode="yearly">Ежегодно</button>
+        </div>
+        <div class="flex items-center gap-3 mt-4">
+          <span class="text-sm text-gray-500">Неделя начинается с</span>
+          <div class="flex gap-2">
+            <button class="pill-btn active" data-weekstart="monday" style="padding: 4px 12px; font-size: 13px;">понедельника</button>
+            <button class="pill-btn" data-weekstart="sunday" style="padding: 4px 12px; font-size: 13px;">воскресенья</button>
+          </div>
+        </div>
+      </section>
+
+      <section class="mb-8">
+        <h2 class="font-serif text-lg text-gray-500 mb-3">Макет</h2>
+        <div class="grid grid-cols-2 gap-3">
+          <button class="layout-btn active" data-layout="horizontal">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="mb-2"><path d="M5 12h14"></path><path d="m12 5 7 7-7 7"></path></svg>
+            Горизонтально
+          </button>
+          <button class="layout-btn" data-layout="vertical">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="mb-2"><path d="M12 5v14"></path><path d="m19 12-7 7-7-7"></path></svg>
+            Вертикально
+          </button>
+        </div>
+      </section>
+
+      <section class="mb-8">
+        <h2 class="font-serif text-3xl text-gray-900 mb-4">Внешний вид</h2>
+        <div class="flex items-center gap-4 mb-4">
+          <h3 class="text-xs uppercase tracking-wider text-gray-400">Форма</h3>
+          <div class="flex gap-2">
+            <button id="btn-filled" class="pill-btn active" onclick="setFill(true)">Залитая</button>
+            <button id="btn-outline" class="pill-btn" onclick="setFill(false)">Контурная</button>
+          </div>
+        </div>
+
+        <div id="fillPastBox" class="hidden bg-[#fafafa] rounded-2xl p-4 border border-black/5 mb-4 items-start gap-3">
+          <input type="checkbox" id="fillPast" class="mt-1 w-4 h-4 rounded border-gray-300 accent-gray-900 cursor-pointer">
+          <div class="flex flex-col">
+            <label for="fillPast" class="text-sm text-gray-700 cursor-pointer">Заливка прошлых дней</label>
+            <span class="text-[10px] text-gray-400">Прошлые дни залиты · Сегодня — жирный контур · Будущие дни — контур</span>
+          </div>
+        </div>
+
+        <div class="grid grid-cols-4 gap-3 mb-4">
+          <button class="shape-btn active" data-shape="circle" onclick="setShape('circle')"><div class="w-10 h-10 rounded-full bg-[#d4d4d4]"></div>Точка</button>
+          <button class="shape-btn" data-shape="rounded" onclick="setShape('rounded')"><div class="w-10 h-10 rounded-lg bg-[#d4d4d4]"></div>Скругленная</button>
+          <button class="shape-btn" data-shape="square" onclick="setShape('square')"><div class="w-10 h-10 bg-[#d4d4d4]"></div>Квадратная</button>
+          <button class="shape-btn" data-shape="pill" onclick="setShape('pill')"><div class="w-14 h-6 rounded-full bg-[#d4d4d4]"></div>Пилюля</button>
+        </div>
+        
+        <div class="bg-[#fafafa] rounded-3xl p-5 border border-black/5 flex items-center justify-between mb-2">
+          <label class="text-sm text-gray-600">Выделите сегодня</label>
+          <div class="flex items-center gap-3">
+            <input type="color" id="todayColor" value="#0ea5e9" class="w-6 h-6 rounded-full cursor-pointer border-0 p-0">
+            <label class="toggle-switch"><input type="checkbox" id="highlightToday" checked><span class="slider"></span></label>
+          </div>
+        </div>
+
+        <div class="bg-[#fafafa] rounded-3xl p-5 border border-black/5 flex items-center justify-between mb-2">
+          <label class="text-sm text-gray-600">Показать числа вместо точек</label>
+          <label class="toggle-switch"><input type="checkbox" id="showNumbers" checked><span class="slider"></span></label>
+        </div>
+
+        <div class="bg-[#fafafa] rounded-3xl p-5 border border-black/5 flex items-center justify-between mb-2">
+          <label class="text-sm text-gray-600">Показать и то, и другое</label>
+          <label class="toggle-switch"><input type="checkbox" id="showBoth"><span class="slider"></span></label>
+        </div>
+      </section>
+
+      <section class="mb-8">
+        <h2 class="font-serif text-3xl text-gray-900 mb-4">Тема</h2>
+        <div class="flex flex-wrap gap-2 mb-4">
+          <button class="theme-btn active" data-theme="light" style="background:#f5f5f4; color:#57534e;">light</button>
+          <button class="theme-btn" data-theme="dark" style="background:#18181b; color:#d4d4d8;">dark</button>
+          <button class="theme-btn" data-theme="blueprint" style="background:#1e3a8a; color:#60a5fa;">blueprint</button>
+          <button class="theme-btn" data-theme="matrix" style="background:#022c22; color:#4ade80;">matrix</button>
+          <button class="theme-btn" data-theme="slate" style="background:#0f172a; color:#e2e8f0;">slate</button>
+          <button class="theme-btn" data-theme="nordic" style="background:#f8fafc; color:#0f172a;">nordic</button>
+          <button class="theme-btn" data-theme="luxury" style="background:#000; color:#fbbf24;">luxury</button>
+        </div>
+        <div class="bg-[#fafafa] rounded-3xl p-5 border border-black/5 flex items-center justify-between mb-2">
+          <label class="text-sm text-gray-600">Показать ярлыки</label>
+          <label class="toggle-switch"><input type="checkbox" id="showLabels" checked><span class="slider"></span></label>
+        </div>
+      </section>
+
+      <section class="mb-8">
+        <div class="flex items-center justify-between mb-4">
+          <h2 class="font-serif text-3xl text-gray-900">Карточка</h2>
+          <label class="toggle-switch"><input type="checkbox" id="showCard" checked><span class="slider"></span></label>
+        </div>
+        
+        <div class="flex gap-4 mb-2 px-1">
+          <h3 class="text-xs uppercase tracking-wider text-gray-400 mt-2">Стиль</h3>
+          <div class="flex gap-2">
+            <button id="btn-flat" class="pill-btn active" onclick="setStyle('flat')">Flat</button>
+            <button id="btn-glass" class="pill-btn" onclick="setStyle('glass')">Glass</button>
+          </div>
+        </div>
+
+        <div class="grid grid-cols-2 gap-2 mb-2">
+          <div class="bg-[#fafafa] rounded-3xl p-5 border border-black/5 flex justify-between items-center">
+            <label class="text-sm text-gray-600">Цвет</label>
+            <input type="color" id="cardColor" value="#bae6fd" class="w-6 h-6 rounded-full cursor-pointer border-0 p-0">
+          </div>
+          <div class="bg-[#fafafa] rounded-3xl p-5 border border-black/5 flex justify-between items-center">
+            <label class="text-sm text-gray-600">Граница</label>
+            <label class="toggle-switch"><input type="checkbox" id="cardBorder"><span class="slider"></span></label>
+          </div>
+        </div>
+        
+        <div class="bg-[#fafafa] rounded-3xl p-5 border border-black/5 mb-2">
+          <div class="flex justify-between mb-2">
+            <label class="text-sm text-gray-600">Непрозрачность</label>
+            <span class="text-xs text-gray-400" id="cardOpacityVal">100%</span>
+          </div>
+          <input type="range" id="cardOpacity" min="0" max="100" value="100" class="w-full">
+        </div>
+      </section>
+
+      <section class="mb-8">
+        <h2 class="font-serif text-3xl text-gray-900 mb-4">Заголовок</h2>
+        <div class="bg-[#fafafa] rounded-3xl p-5 border border-black/5">
+          <label class="block text-xs text-gray-500 mb-1">Введите здесь:</label>
+          <input type="text" id="titleText" value="MEMENTO MORI" class="w-full text-lg font-serif text-gray-900 bg-transparent border-b border-gray-200 focus:outline-none pb-1 mb-4">
+          <div class="flex justify-between items-center">
+            <label class="text-sm text-gray-600">Показать брендинг «One Dot»</label>
+            <label class="toggle-switch"><input type="checkbox" id="showLogo" checked><span class="slider"></span></label>
+          </div>
+        </div>
+      </section>
+
+      <section class="mb-8">
+        <h2 class="font-serif text-3xl text-gray-900 mb-4">Padding</h2>
+        <div class="bg-[#fafafa] rounded-3xl p-5 border border-black/5">
+          <p class="text-sm text-gray-500 mb-3">Настройте положение сетки</p>
+          <div class="flex gap-2 mb-4">
+            <button class="pill-btn active" data-fill="none">Нет</button>
+            <button class="pill-btn" data-fill="top">Сверху</button>
+            <button class="pill-btn" data-fill="bottom">Снизу</button>
+          </div>
+          <div class="grid grid-cols-2 gap-2">
+            <div class="bg-white rounded-xl p-3 border border-gray-100">
+              <label class="text-xs text-gray-500 uppercase">Сверху (px)</label>
+              <input type="number" id="fillTop" value="0" class="w-full text-base bg-transparent focus:outline-none">
+            </div>
+            <div class="bg-white rounded-xl p-3 border border-gray-100">
+              <label class="text-xs text-gray-500 uppercase">Снизу (px)</label>
+              <input type="number" id="fillBottom" value="20" class="w-full text-base bg-transparent focus:outline-none">
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section class="mb-8 border-t border-gray-200 pt-6">
+        <button class="flex items-center gap-2 group mb-4" onclick="toggleSpoiler()">
+          <h2 class="font-serif text-xl text-gray-500 group-hover:text-gray-900 transition-colors">Нужно больше элементов управления?</h2>
+          <svg id="spoilerIcon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="text-gray-400 transition-transform"><path d="m6 9 6 6 6-6"></path></svg>
+        </button>
+        <div id="spoilerContent" class="hidden space-y-2">
+          <div class="bg-[#fafafa] rounded-3xl p-5 border border-black/5 flex items-center justify-between">
+            <label class="text-sm text-gray-600">Прозрачность точек</label>
+            <div class="flex items-center gap-3 w-1/2 justify-end">
+              <span class="text-xs text-gray-400 w-8 text-right" id="dotOpacityVal">100%</span>
+              <input type="range" id="dotOpacity" min="10" max="100" value="100" class="w-32">
+            </div>
+          </div>
+          <div class="bg-[#fafafa] rounded-3xl p-5 border border-black/5 flex items-center justify-between">
+            <label class="text-sm text-gray-600">Масштаб сетки</label>
+            <div class="flex items-center gap-3 w-1/2 justify-end">
+              <span class="text-xs text-gray-400 w-8 text-right" id="gridScaleVal">100%</span>
+              <input type="range" id="gridScale" min="50" max="150" value="100" class="w-32">
+            </div>
+          </div>
+          <div class="bg-[#fafafa] rounded-3xl p-5 border border-black/5 flex items-center justify-between">
+            <label class="text-sm text-gray-600">Размер фигуры</label>
+            <div class="flex items-center gap-3 w-1/2 justify-end">
+              <span class="text-xs text-gray-400 w-8 text-right" id="shapeSizeVal">100%</span>
+              <input type="range" id="shapeSize" min="50" max="150" value="100" class="w-32">
+            </div>
+          </div>
+        </div>
+      </section>
+
+    </div>
+
+    <div class="p-8 border-t border-gray-200 bg-white">
+      <button id="openBtn" class="w-full bg-[#2a2a2a] text-white rounded-full h-14 font-serif text-lg shadow-lg hover:shadow-xl transition-all flex items-center justify-center gap-2">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+        Сохраните и получите ярлык для iOS
+      </button>
+    </div>
+  </div>
+
+<script>
+  let state = {
+    device: 'iphone-13',
+    mode: 'quarterly', layout: 'horizontal', theme: 'light', shape: 'circle', filled: true, fillPast: false,
+    highlightToday: true, todayColor: '#0ea5e9', showNumbers: true, showBoth: false,
+    showLabels: true, showProgress: true,
+    showCard: true, cardStyle: 'flat', cardOpacity: 100, cardColor: '#bae6fd', cardBorder: false,
+    titleText: 'MEMENTO MORI', showLogo: true,
+    fill: 'none', fillTop: 0, fillBottom: 20,
+    dotOpacity: 100, gridScale: 100, shapeSize: 100,
+    weekStart: 'monday'
+  };
+
+  const preview = document.getElementById('preview');
+  const openBtn = document.getElementById('openBtn');
+
+  function update() {
+    const p = new URLSearchParams(state);
+    preview.src = `/api/wallpaper?${p.toString()}`;
+    openBtn.onclick = () => window.open(preview.src, '_blank');
+  }
+
+  function toggleSpoiler() {
+    const content = document.getElementById('spoilerContent');
+    const icon = document.getElementById('spoilerIcon');
+    content.classList.toggle('hidden');
+    icon.style.transform = content.classList.contains('hidden') ? 'rotate(0deg)' : 'rotate(180deg)';
+  }
+
+  function setShape(shape) {
+    state.shape = shape;
+    document.querySelectorAll('.shape-btn').forEach(b => b.classList.remove('active'));
+    document.querySelector(`[data-shape="${shape}"]`).classList.add('active');
+    update();
+  }
+
+  function setFill(isFilled) {
+    state.filled = isFilled;
+    document.getElementById('btn-filled').classList.toggle('active', isFilled);
+    document.getElementById('btn-outline').classList.toggle('active', !isFilled);
+    
+    // Показываем/скрываем "Заливка прошлых дней"
+    const fillPastBox = document.getElementById('fillPastBox');
+    if (isFilled) {
+      fillPastBox.classList.add('hidden');
+      fillPastBox.classList.remove('flex');
+    } else {
+      fillPastBox.classList.remove('hidden');
+      fillPastBox.classList.add('flex');
+    }
+    update();
+  }
+
+  function setStyle(style) {
+    state.cardStyle = style;
+    document.getElementById('btn-flat').classList.toggle('active', style === 'flat');
+    document.getElementById('btn-glass').classList.toggle('active', style === 'glass');
+    update();
+  }
+
+  function randomize() {
+    const themes = ['light', 'dark', 'blueprint', 'matrix', 'slate', 'nordic', 'luxury'];
+    state.theme = themes[Math.floor(Math.random() * themes.length)];
+    state.shape = ['circle', 'rounded', 'square', 'pill'][Math.floor(Math.random() * 4)];
+    state.todayColor = '#' + Math.floor(Math.random()*16777215).toString(16).padStart(6, '0');
+    document.getElementById('todayColor').value = state.todayColor;
+    
+    document.querySelectorAll('[data-theme]').forEach(b => b.classList.toggle('active', b.dataset.theme === state.theme));
+    document.querySelectorAll('.shape-btn').forEach(b => b.classList.toggle('active', b.dataset.shape === state.shape));
+    
+    update();
+  }
+
+  document.getElementById('device').onchange = (e) => { state.device = e.target.value; update(); };
+
+  document.querySelectorAll('[data-mode]').forEach(btn => btn.onclick = () => {
+    document.querySelectorAll('[data-mode]').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active'); state.mode = btn.dataset.mode; update();
+  });
+
+  document.querySelectorAll('[data-weekstart]').forEach(btn => btn.onclick = () => {
+    document.querySelectorAll('[data-weekstart]').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active'); state.weekStart = btn.dataset.weekstart; update();
+  });
+  
+  document.querySelectorAll('[data-layout]').forEach(btn => btn.onclick = () => {
+    document.querySelectorAll('[data-layout]').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active'); state.layout = btn.dataset.layout; update();
+  });
+
+  document.querySelectorAll('[data-theme]').forEach(btn => btn.onclick = () => {
+    document.querySelectorAll('[data-theme]').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active'); state.theme = btn.dataset.theme; update();
+  });
+  
+  document.querySelectorAll('[data-fill]').forEach(btn => btn.onclick = () => {
+    document.querySelectorAll('[data-fill]').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active'); state.fill = btn.dataset.fill; update();
+  });
+
+  ['highlightToday', 'showNumbers', 'showBoth', 'fillPast', 'showLabels', 'showCard', 'cardBorder', 'showLogo'].forEach(id => {
+    document.getElementById(id).onchange = (e) => { state[id] = e.target.checked; update(); };
+  });
+
+  ['todayColor', 'cardColor', 'titleText', 'fillTop', 'fillBottom'].forEach(id => {
+    document.getElementById(id).oninput = (e) => { 
+      state[id] = id.includes('fill') ? (parseInt(e.target.value) || 0) : e.target.value; 
+      update(); 
+    };
+  });
+
+  ['cardOpacity', 'dotOpacity', 'gridScale', 'shapeSize'].forEach(id => {
+    document.getElementById(id).oninput = (e) => {
+      state[id] = parseInt(e.target.value);
+      document.getElementById(id + 'Val').textContent = e.target.value + '%';
+      update();
+    };
+  });
+
+  // Инициализация при загрузке
+  setFill(true);
+  update();
+</script>
+</body>
+</html>
